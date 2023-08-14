@@ -53,7 +53,7 @@ public class LogService {
                         previousLayer = entry.getLayer();
                         previousName = entry.getName();
                     } else {
-                        if (previousLayer == 2 && entry.getLayer() == 1 || previousLayer == 3 && entry.getLayer() == 2) {
+                        if (previousLayer == 2 && entry.getLayer() == 1 || previousLayer == 3 && entry.getLayer() == 2 || previousLayer == entry.getLayer()) {
                             backtracks.put(entry.getName(), backtracks.get(entry.getName()) + 1);
                         }
                         previousLayer = entry.getLayer();

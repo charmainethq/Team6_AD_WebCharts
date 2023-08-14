@@ -170,20 +170,24 @@
                 scales: {
                     y: {
                         beginAtZero: true,
-                        suggestedMax: 10
+                        //suggestedMax: 10
                     }
                 },
                 plugins: {
                     legend: {
                         position: 'right',
                         labels: {
-                            usePointStyle: true,  // This is the important line
-                            boxWidth: 10  // Size of the legend marker, you can adjust as needed
+                            usePointStyle: true,
+                            boxWidth: 20
                         }
                     }
                 }
             }
         };
+
+        datasets.forEach(dataset => {
+            dataset.pointRadius = 5; // Marker Size
+        });
 
         const ctx = document.getElementById('consolidatedChart').getContext('2d');
         const backtrackChart = new Chart(ctx, chartOptions);

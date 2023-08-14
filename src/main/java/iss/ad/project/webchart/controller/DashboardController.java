@@ -50,7 +50,7 @@ public class DashboardController {
         model.addAttribute("modelAveragesJson", jsonAverages);
 
         System.out.println(jsonBacktracks);
-        System.out.println(jsonAverages);
+        //System.out.println(jsonAverages);
 
         return "dashboard";
     }
