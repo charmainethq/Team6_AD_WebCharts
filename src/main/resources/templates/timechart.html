@@ -5,7 +5,7 @@
     <script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
 </head>
 <body>
-    <h1>Think Time Genre Chart</h1>
+	<div th:include="sidebar.html"></div>
 	<select id="taskSelector" style="display: block; margin: 0 auto; font-size: 1.25em;">
 		<option value="task1">Task 1</option>
 		<option value="task2">Task 2</option>
@@ -92,7 +92,7 @@
         	        text: "Model 1"
         	    },
         	    axisX: {
-        	    	title: "Layer 2 Sub Genres",
+        	    	title: "Genres",
         	        labelFormatter: function (e) {
         	            return model1Labels[e.value % model1Labels.length];
         	        }
@@ -123,7 +123,7 @@
         	        text: "Model 2"
         	    },
         	    axisX: {
-        	    	title: "Layer 2 Sub Genres",
+        	    	title: "Genres",
         	        labelFormatter: function (e) {
         	            return model2Labels[e.value % model2Labels.length];
         	        }
