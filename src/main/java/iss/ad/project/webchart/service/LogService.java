@@ -59,7 +59,7 @@ public class LogService {
                         previousLayer = entry.getLayer();
                     }
                 }
-                
+
                 String key = "model" + modelId + "task" + taskId;
                 modelTaskBacktracks.put(key, backtracks);
             }
