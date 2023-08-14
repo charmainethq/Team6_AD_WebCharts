@@ -24,4 +24,8 @@ public class LogService {
     public List<LogEntry> getUniqueLogEntry(String name, int taskId, int modelId) {
         return logRepo.findByNameAndTaskIdAndModelId(name, taskId, modelId);
     }
+    
+    public List<LogEntry> getAll(){
+    	return logRepo.findAll();
+    }
 }
