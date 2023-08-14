@@ -19,30 +19,31 @@
 </head>
 <body>
 
-    <div class = "radioFilter">
-        <input type="radio" id="showAll" name="chartFilter" value="all" checked>
+    <div class="checkboxFilter">
+        <input type="checkbox" id="showAll" name="chartFilter" value="all" checked>
         <label for="showAll">Show All</label>
 
-        <input type="radio" id="showAvg" name="chartFilter" value="average">
+        <input type="checkbox" id="showAvg" name="chartFilter" value="average">
         <label for="showAvg">Show Averages Only</label>
 
-        <input type="radio" id="showTask1" name="chartFilter" value="task1">
+        <input type="checkbox" id="showTask1" name="chartFilter" value="task1">
         <label for="showTask1">Show Task 1 Only</label>
 
-        <input type="radio" id="showTask2" name="chartFilter" value="task2">
+        <input type="checkbox" id="showTask2" name="chartFilter" value="task2">
         <label for="showTask2">Show Task 2 Only</label>
 
-        <input type="radio" id="showTask3" name="chartFilter" value="task3">
+        <input type="checkbox" id="showTask3" name="chartFilter" value="task3">
         <label for="showTask3">Show Task 3 Only</label>
 
-        <input type="radio" id="showModel1" name="chartFilter" value="model1">
+        <input type="checkbox" id="showModel1" name="chartFilter" value="model1">
         <label for="showModel1">Show Model 1 Only</label>
 
-        <input type="radio" id="showModel2" name="chartFilter" value="model2">
+        <input type="checkbox" id="showModel2" name="chartFilter" value="model2">
         <label for="showModel2">Show Model 2 Only</label>
 
         <button id="clearAll">Clear All</button>
     </div>
+
 
     <div id="dataContainer" th:attr="data-backtracks=${modelTaskBacktracksJson}" style="display: none;"></div>
 
@@ -188,39 +189,45 @@
         // Filtering Logic
         const originalDatasets = JSON.parse(JSON.stringify(datasets)); // Clone datasets
 
-        function updateChart(filter) {
-            if (filter === 'all') {
+        function updateChart() {
+            let selectedFilters = Array.from(document.querySelectorAll('input[name="chartFilter"]:checked')).map(checkbox => checkbox.value);
+
+            if (selectedFilters.includes('all')) {
                 myChart.data.datasets = originalDatasets;
-            } else if (filter === 'average') {
+            } else {
                 myChart.data.datasets = originalDatasets.filter(dataset => {
-                    return dataset.label.includes('Average');
-                });
-            } else if (filter.startsWith('task')) {
-                const taskNumber = filter.slice(-1);
-                myChart.data.datasets = originalDatasets.filter(dataset => {
-                    return dataset.label.includes('Task ' + taskNumber);
-                });
-            } else if (filter.startsWith('model')) {
-                const modelNumber = filter.slice(-1);
-                myChart.data.datasets = originalDatasets.filter(dataset => {
-                    return dataset.label.includes('Model ' + modelNumber);
+                    if (selectedFilters.includes('average') && dataset.label.includes('Average')) return true;
+
+                    for (let filter of selectedFilters) {
+                        if (filter.startsWith('task')) {
+                            const taskNumber = filter.slice(-1);
+                            if (dataset.label.includes('Task ' + taskNumber)) return true;
+                        } else if (filter.startsWith('model')) {
+                            const modelNumber = filter.slice(-1);
+                            if (dataset.label.includes('Model ' + modelNumber)) return true;
+                        }
+                    }
+                    return false;
                 });
             }
-
             myChart.update();
         }
 
-        // Event listeners for the radio options and clear button
-        document.querySelectorAll('input[name="chartFilter"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                updateChart(this.value);
+        // Event listeners for the checkboxes and clear button
+        document.querySelectorAll('input[name="chartFilter"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                updateChart();
             });
         });
 
         document.getElementById('clearAll').addEventListener('click', function() {
-            myChart.data.datasets = [];
+            document.querySelectorAll('input[name="chartFilter"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            myChart.data.datasets = []; // Clear datasets or revert to a default state if necessary
             myChart.update();
         });
+
     </script>
 
 </body>
