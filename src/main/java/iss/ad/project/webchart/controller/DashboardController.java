@@ -29,23 +29,20 @@ public class DashboardController {
     }
     @GetMapping("/dashboard")
     public String getBacktracks(Model model) throws JsonProcessingException {
-        Map<String, Map<String, Integer>> modelTaskBacktracks = logService.fetchBacktracksPerUserForAllModelsTasks();
-        String jsonBacktracks = objectMapper.writeValueAsString(modelTaskBacktracks);
-        model.addAttribute("modelTaskBacktracksJson", jsonBacktracks);
-        System.out.println(jsonBacktracks);
+        Map<String, Map<String, Integer>> backtracks = logService.fetchBacktracksPerUserForAllModelsTasks();
+        Map<String, Double> averages = logService.computeModelAverages(backtracks);
 
-        // Printing the modelTaskBacktracks
-//        for (Map.Entry<String, Map<String, Integer>> modelTaskEntry : modelTaskBacktracks.entrySet()) {
-//            String modelTaskKey = modelTaskEntry.getKey();
-//            Map<String, Integer> userBacktracks = modelTaskEntry.getValue();
-//            System.out.println("ModelTask combination: " + modelTaskKey);
-//            for (Map.Entry<String, Integer> userEntry : userBacktracks.entrySet()) {
-//                String userName = userEntry.getKey();
-//                Integer backtrackCount = userEntry.getValue();
-//                System.out.println("User: " + userName + " | Backtracks: " + backtrackCount);
-//            }
-//            System.out.println("-------------------------------");
-//        }
+        String jsonBacktracks = objectMapper.writeValueAsString(backtracks);
+        String jsonAverages = objectMapper.writeValueAsString(averages);
+
+        model.addAttribute("modelTaskBacktracksJson", jsonBacktracks);
+        model.addAttribute("modelAveragesJson", jsonAverages);
+
+        System.out.println(jsonBacktracks);
+        System.out.println(jsonAverages);
+
         return "dashboard";
     }
+
+
 }

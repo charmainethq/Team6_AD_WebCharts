@@ -58,4 +58,31 @@ public class LogService {
         }
         return modelTaskBacktracks;
     }
+
+    public Map<String, Double> computeModelAverages(Map<String, Map<String, Integer>> modelTaskBacktracks) {
+        Map<String, Double> modelAverages = new HashMap<>();
+
+        for (int modelId = 1; modelId <= 2; modelId++) {
+            Map<String, Integer> modelTotalBacktracks = new HashMap<>();
+            Map<String, Integer> modelTaskCount = new HashMap<>();
+
+            for (int taskId = 1; taskId <= 3; taskId++) {
+                String key = "model" + modelId + "task" + taskId;
+
+                modelTaskBacktracks.get(key).forEach((user, backtracks) -> {
+                    modelTotalBacktracks.put(user, modelTotalBacktracks.getOrDefault(user, 0) + backtracks);
+                    modelTaskCount.put(user, modelTaskCount.getOrDefault(user, 0) + 1);
+                });
+            }
+
+            for (String user : modelTotalBacktracks.keySet()) {
+                double average = (double) modelTotalBacktracks.get(user) / modelTaskCount.get(user);
+                modelAverages.put("model" + modelId + user, average);
+            }
+        }
+
+        return modelAverages;
+    }
+
+
 }
