@@ -25,6 +25,12 @@ public class LogService {
         return logRepo.findByNameAndTaskIdAndModelId(name, taskId, modelId);
     }
 
+    
+    public List<LogEntry> getAll(){
+    	return logRepo.findAll();
+    }
+
+
 
     public Map<String, Map<String, Integer>> fetchBacktracksPerUserForAllModelsTasks() {
         Map<String, Map<String, Integer>> modelTaskBacktracks = new HashMap<>();
