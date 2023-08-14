@@ -1,10 +1,227 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container {
+            width: 70%;
+            height: 50%;
+            margin: auto;
+        }
+
+        .chart-container canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+    </style>
 </head>
 <body>
+
+    <div class = "radioFilter">
+        <input type="radio" id="showAll" name="chartFilter" value="all" checked>
+        <label for="showAll">Show All</label>
+
+        <input type="radio" id="showAvg" name="chartFilter" value="average">
+        <label for="showAvg">Show Averages Only</label>
+
+        <input type="radio" id="showTask1" name="chartFilter" value="task1">
+        <label for="showTask1">Show Task 1 Only</label>
+
+        <input type="radio" id="showTask2" name="chartFilter" value="task2">
+        <label for="showTask2">Show Task 2 Only</label>
+
+        <input type="radio" id="showTask3" name="chartFilter" value="task3">
+        <label for="showTask3">Show Task 3 Only</label>
+
+        <input type="radio" id="showModel1" name="chartFilter" value="model1">
+        <label for="showModel1">Show Model 1 Only</label>
+
+        <input type="radio" id="showModel2" name="chartFilter" value="model2">
+        <label for="showModel2">Show Model 2 Only</label>
+
+        <button id="clearAll">Clear All</button>
+    </div>
+
+    <div id="dataContainer" th:attr="data-backtracks=${modelTaskBacktracksJson}" style="display: none;"></div>
+
+    <div class="chart-container">
+        <canvas id="consolidatedChart"></canvas>
+    </div>
+
+
+    <script th:inline="javascript">
+
+        const rawData = document.getElementById('dataContainer').getAttribute('data-backtracks');
+        const allData = JSON.parse(rawData);
+        console.log("Data received from server:", allData);
+
+        if (!allData) {
+            console.error("allData is not initialized from Thymeleaf");
+        }
+
+
+        let datasets = [];
+        const colors = [
+            'rgba(255, 99, 132, 1)', // M1T1
+            'rgba(54, 162, 235, 1)', // M1T2
+            'rgba(255, 206, 86, 1)', // M1T3
+            'rgba(75, 192, 192, 1)', // M1A
+            'rgba(153, 102, 255, 1)', // M2T
+            'rgba(255, 159, 64, 1)',
+            'rgba(255, 159, 64, 1)',
+            'rgba(255, 159, 64, 1)' // M2A
+        ];
+
+        let usersSet = new Set();
+
+
+        // For each modelTaskPair, iterate through the userData and add the user key into userSet if it doesn't exist
+        let index = 0;
+        for (let modelId = 1; modelId <= 2; modelId++) {
+            for (let taskId = 1; taskId <= 3; taskId++) {
+                let key = "model" + modelId + "task" + taskId;
+                if (allData[key]) {
+                    const userData = allData[key];
+                    for (let user of Object.keys(userData)) {
+                        usersSet.add(user);
+                    }
+                    datasets.push({
+                        label: 'Model ' + modelId + ' Task ' + taskId,
+                        data: [],
+                        borderColor: colors[index % colors.length],
+                        fill: false
+                    });
+                    index++;
+                } else {
+                    console.error("Missing data for: " + key);
+                }
+            }
+        }
+
+
+        const usersArray = [...usersSet].sort();
+
+        // For each modelTaskPair add a user's backtrack value into its data array
+        for (let dataset of datasets) {
+            let modelTaskPair = dataset.label.replace(/ /g, "").toLowerCase();
+
+            let userDataForModelTask = allData[modelTaskPair];
+            console.log("Processing key:", modelTaskPair, "Data:", userDataForModelTask);
+
+            if (!userDataForModelTask) {
+                console.error("Data missing for key: ", modelTaskPair);
+            } else {
+                for (let user of usersArray) {
+                    let userBacktracks = userDataForModelTask[user];
+                    console.log("Processing user:", user, "Data:", userDataForModelTask[user]);
+
+                    if (userBacktracks === undefined) {
+                        console.error("Data missing for user: ", user, " under key: ", modelTaskPair);
+                        dataset.data.push(0);
+                    } else {
+                        dataset.data.push(userBacktracks);
+                    }
+                }
+            }
+        }
+
+        // Compute averages
+        const averages = {};
+        for (let modelId = 1; modelId <= 2; modelId++) {
+            for (let user of usersArray) {
+                let totalBacktracks = 0;
+                let countTasks = 0;
+
+                for (let taskId = 1; taskId <= 3; taskId++) {
+                    let key = "model" + modelId + "task" + taskId;
+                    if (allData[key] && allData[key][user] !== undefined) {
+                        totalBacktracks += allData[key][user];
+                        countTasks++;
+                    }
+                }
+
+                const average = countTasks > 0 ? totalBacktracks / countTasks : 0;
+                averages["model" + modelId + user] = average;
+            }
+        }
+
+        for (let modelId = 1; modelId <= 2; modelId++) {
+            const averageData = usersArray.map(user => averages["model" + modelId + user]);
+            datasets.push({
+                label: 'Model ' + modelId + ' Average',
+                data: averageData,
+                borderColor: colors[index % colors.length],
+                fill: false
+            });
+            index++;
+        }
+
+
+
+        const chartOptions = {
+            type: 'line',
+            data: {
+                labels: usersArray,
+                datasets: datasets
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        suggestedMax: 10
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    }
+                }
+            }
+        };
+
+
+        var ctx = document.getElementById('consolidatedChart').getContext('2d');
+        const myChart = new Chart(ctx, chartOptions);
+
+        // Filtering Logic
+        const originalDatasets = JSON.parse(JSON.stringify(datasets)); // Clone datasets
+
+        function updateChart(filter) {
+            if (filter === 'all') {
+                myChart.data.datasets = originalDatasets;
+            } else if (filter === 'average') {
+                myChart.data.datasets = originalDatasets.filter(dataset => {
+                    return dataset.label.includes('Average');
+                });
+            } else if (filter.startsWith('task')) {
+                const taskNumber = filter.slice(-1);
+                myChart.data.datasets = originalDatasets.filter(dataset => {
+                    return dataset.label.includes('Task ' + taskNumber);
+                });
+            } else if (filter.startsWith('model')) {
+                const modelNumber = filter.slice(-1);
+                myChart.data.datasets = originalDatasets.filter(dataset => {
+                    return dataset.label.includes('Model ' + modelNumber);
+                });
+            }
+
+            myChart.update();
+        }
+
+        // Event listeners for the radio options and clear button
+        document.querySelectorAll('input[name="chartFilter"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                updateChart(this.value);
+            });
+        });
+
+        document.getElementById('clearAll').addEventListener('click', function() {
+            myChart.data.datasets = [];
+            myChart.update();
+        });
+    </script>
 
 </body>
 </html>
