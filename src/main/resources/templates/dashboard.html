@@ -66,9 +66,33 @@
 
         // Colors for the datasets
         const colors = [
-            'rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)',
-            'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)'
+            '#29B6F6', '#F4D03F', // averages
+            '#1F618D', '#5499C7', '#A9CCE3',// model1
+            '#A04000','#E67E22','#F0B27A ', // model2
         ];
+
+        const pointStyles = {
+            'model1Average': 'circle',
+            'model2Average': 'rect',
+            'model1Task': 'star',
+            'model2Task': 'rectRot'
+        };
+
+        function getPointProperties(modelId, taskId = null) {
+            if (taskId === null) {  // This is for the average
+                return {
+                    pointStyle: pointStyles[`model${modelId}Average`],
+                    pointBackgroundColor: colors[modelId - 1] // Use the existing colors for model averages
+                };
+            } else { // This is for a task
+                return {
+                    pointStyle: pointStyles[`model${modelId}Task`], // Corrected point style access
+                    pointBackgroundColor: colors[2 + (modelId - 1) * 3 + (taskId - 1)] // Adjusted colors for tasks based on your array
+                };
+            }
+        }
+
+
 
         // Add users to userSet
         const userSet = new Set();
@@ -86,15 +110,18 @@
         // Add average data to datasets
         for (let modelId = 1; modelId <= 2; modelId++) {
             const averageData = usersArray.map(user => allAverages["model" + modelId + user] || 0);
+            const properties = getPointProperties(modelId); // Get properties for average
             datasets.push({
                 label: 'Model ' + modelId + ' Average',
                 data: averageData,
                 borderColor: colors[index % colors.length],
-                fill: false
+                fill: false,
+                pointStyle: properties.pointStyle,
+                pointBackgroundColor: properties.pointBackgroundColor
             });
             index++;
         }
-        
+
         // Add the ModelTaskPair data
         for (let modelId = 1; modelId <= 2; modelId++) {
             for (let taskId = 1; taskId <= 3; taskId++) {
@@ -103,16 +130,20 @@
                     const userData = allBacktracks[key];
                     const dataForUsers = usersArray.map(user => userData[user] || 0);
 
+                    const properties = getPointProperties(modelId, taskId); // Get properties for task
                     datasets.push({
                         label: 'Model ' + modelId + ' Task ' + taskId,
                         data: dataForUsers,
                         borderColor: colors[index % colors.length],
-                        fill: false
+                        fill: false,
+                        pointStyle: properties.pointStyle,
+                        pointBackgroundColor: properties.pointBackgroundColor
                     });
                     index++;
                 }
             }
         }
+
 
 
         // Initialize the chart
@@ -131,7 +162,11 @@
                 },
                 plugins: {
                     legend: {
-                        position: 'right'
+                        position: 'right',
+                        labels: {
+                            usePointStyle: true,  // This is the important line
+                            boxWidth: 10  // Size of the legend marker, you can adjust as needed
+                        }
                     }
                 }
             }
