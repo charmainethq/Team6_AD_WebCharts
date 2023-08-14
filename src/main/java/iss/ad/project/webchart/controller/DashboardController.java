@@ -25,9 +25,9 @@ public class DashboardController {
 
     @GetMapping("/")
     public RedirectView redirectToDashboard() {
-        return new RedirectView("/dashboard");
+        return new RedirectView("/backtracks");
     }
-    @GetMapping("/dashboard")
+    @GetMapping("/backtracks")
     public String getBacktracks(Model model) throws JsonProcessingException {
         Map<String, Map<String, Integer>> backtracks = logService.fetchBacktracksPerUserForAllModelsTasks();
         Map<String, Double> averages = logService.computeModelAverages(backtracks);
