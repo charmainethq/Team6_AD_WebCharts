@@ -56,7 +56,7 @@ public class DashboardController {
     }
   
 
-    @GetMapping("/timechart")
+    @GetMapping("/genretimechart")
     public String getTimeChart(Model model) {
     	
     	// model 1 subGenres
