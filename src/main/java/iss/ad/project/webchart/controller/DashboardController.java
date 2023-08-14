@@ -28,12 +28,6 @@ public class DashboardController {
         return new RedirectView("/dashboard");
     }
     @GetMapping("/dashboard")
-    public String getDashboard() {
-        return "dashboard";
-    }
-
-
-    @GetMapping("/backtracks")
     public String getBacktracks(Model model) throws JsonProcessingException {
         Map<String, Map<String, Integer>> modelTaskBacktracks = logService.fetchBacktracksPerUserForAllModelsTasks();
         String jsonBacktracks = objectMapper.writeValueAsString(modelTaskBacktracks);
