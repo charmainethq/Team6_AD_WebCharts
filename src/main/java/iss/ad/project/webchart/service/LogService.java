@@ -41,17 +41,19 @@ public class LogService {
                 int previousLayer = 0;
 
                 for (LogEntry entry : entries) {
+                    backtracks.putIfAbsent(entry.getName(), 0); // Each user entry in ModelTaskPair will have a default value of 0
+
                     if (!entry.getName().equals(previousName)) {
                         previousLayer = entry.getLayer();
                         previousName = entry.getName();
                     } else {
-                        if (previousLayer == 2 && entry.getLayer() == 1 || previousLayer == 3 && entry.getLayer() == 2 ) {
-                            backtracks.put(entry.getName(), backtracks.getOrDefault(entry.getName(), 0) + 1);
+                        if (previousLayer == 2 && entry.getLayer() == 1 || previousLayer == 3 && entry.getLayer() == 2) {
+                            backtracks.put(entry.getName(), backtracks.get(entry.getName()) + 1);
                         }
                         previousLayer = entry.getLayer();
                     }
                 }
-
+                
                 String key = "model" + modelId + "task" + taskId;
                 modelTaskBacktracks.put(key, backtracks);
             }
