@@ -39,5 +39,7 @@ public class LogEntry implements Serializable {
     private int orderValue;
 
     private int successValue;
+    
+    private int model;
 
 }
